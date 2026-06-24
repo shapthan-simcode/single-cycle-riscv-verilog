@@ -2,50 +2,80 @@
 
 ## Overview
 
-This project implements an educational Single-Cycle RISC-V (RV32I) Processor using Verilog HDL. The processor consists of core datapath components including the Program Counter (PC), Instruction Memory, Instruction Decoder, Register File, Immediate Generator, ALU, Control Unit, and Data Memory.
+This project implements a Single-Cycle RISC-V (RV32I) Processor using Verilog HDL. The processor is capable of fetching, decoding, and executing basic RISC-V instructions while demonstrating the complete software-to-hardware workflow from C code compilation to processor simulation. The design includes core datapath components such as the Program Counter (PC), Instruction Memory, Register File, Immediate Generator, Control Unit, ALU, and a GPIO peripheral. Verification is performed using Icarus Verilog and GTKWave.
 
-The project also demonstrates the complete RISC-V software-to-hardware workflow by compiling C programs using the RISC-V GCC toolchain, linking them with a custom linker script, generating ELF and HEX files, and loading instructions into the processor's instruction memory.
+---
+
+## Features
+
+- RV32I Single-Cycle Processor Architecture
+- Program Counter (PC)
+- Instruction Memory
+- Instruction Decoder
+- Register File (32 Registers)
+- Immediate Generator
+- Control Unit
+- Arithmetic Logic Unit (ALU)
+- GPIO Peripheral Integration
+- GTKWave Waveform Verification
+- RISC-V GCC Toolchain Support
+- C → ELF → BIN → HEX Workflow
+
+---
 
 ## Architecture
 
-The processor follows a Single-Cycle Datapath architecture:
-
 ```text
-           PC
-            │
-            ▼
-  Instruction Memory
-            │
-            ▼
-         Decoder
-            │
-     ┌──────┴──────┐
-     ▼             ▼
- Register File   Imm Gen
-     │             │
-     └──────┬──────┘
-            ▼
-           ALU
-            │
-     ┌──────┴──────┐
-     ▼             ▼
- Data Memory   Write Back
+                +----------------+
+                | Program Counter|
+                +--------+-------+
+                         |
+                         v
+                +----------------+
+                | Instruction Mem|
+                +--------+-------+
+                         |
+                         v
+                +----------------+
+                |    Decoder     |
+                +--------+-------+
+                         |
+          +--------------+--------------+
+          |                             |
+          v                             v
+ +----------------+         +----------------+
+ | Register File  |         | Immediate Gen  |
+ +--------+-------+         +----------------+
+          |                             |
+          +--------------+--------------+
+                         |
+                         v
+                +----------------+
+                |      ALU       |
+                +--------+-------+
+                         |
+                         v
+                +----------------+
+                |      GPIO      |
+                +----------------+
 ```
+
+---
 
 ## Project Structure
 
 ```text
 single-cycle-riscv-verilog/
 │
-├── pc.v
-├── instruction_memory.v
-├── decoder.v
-├── imm_gen.v
-├── reg.v
 ├── alu.v
 ├── control.v
-├── data_memory.v
 ├── cpu_top.v
+├── decoder.v
+├── gpio.v
+├── imm_gen.v
+├── instruction_memory.v
+├── pc.v
+├── reg.v
 ├── tb_cpu.v
 │
 ├── firmware/
@@ -53,25 +83,13 @@ single-cycle-riscv-verilog/
 │   └── link.ld
 │
 ├── firmware.hex
-└── README.md
+├── README.md
+└── .gitignore
 ```
 
-## Features
+---
 
-- Single-Cycle RV32I Processor Design
-- Program Counter (PC)
-- Instruction Memory
-- Instruction Decoder
-- Register File
-- Immediate Generator
-- Arithmetic Logic Unit (ALU)
-- Control Unit
-- Data Memory
-- Verilog Testbench
-- RISC-V GCC Toolchain Integration
-- C → ELF → HEX Workflow
-
-## Toolchain Flow
+## Software Flow
 
 ```text
 program.c
@@ -98,19 +116,11 @@ Instruction Memory
 RISC-V Processor
 ```
 
-## Tools Used
-
-- Verilog HDL
-- VS Code
-- WSL Ubuntu
-- Yosys
-- TerosHDL
-- Icarus Verilog
-- RISC-V GCC Toolchain
+---
 
 ## Compilation Flow
 
-Compile C program:
+### Compile C Program
 
 ```bash
 riscv64-unknown-elf-gcc \
@@ -121,7 +131,7 @@ riscv64-unknown-elf-gcc \
 -o program.o
 ```
 
-Link executable:
+### Link Executable
 
 ```bash
 riscv64-unknown-elf-ld \
@@ -131,7 +141,7 @@ program.o \
 -o firmware.elf
 ```
 
-Generate binary:
+### Generate Binary
 
 ```bash
 riscv64-unknown-elf-objcopy \
@@ -140,34 +150,90 @@ firmware.elf \
 firmware.bin
 ```
 
-Generate HEX file:
+### Generate HEX File
 
 ```bash
 hexdump -ve '1/4 "%08x\n"' firmware.bin > firmware.hex
 ```
 
+---
+
+## Simulation
+
+Compile and simulate the processor:
+
+```bash
+iverilog *.v -o cpu.out
+vvp cpu.out
+```
+
+Generate waveform:
+
+```bash
+gtkwave processor.vcd
+```
+
+---
+
+## GPIO Verification
+
+The GPIO peripheral is connected to the processor datapath and can be observed through GTKWave during simulation. The waveform verifies instruction execution, ALU operation, register activity, and GPIO updates.
+
+> Add your waveform screenshots in the `images/` folder and link them below.
+
+```markdown
+![GPIO Waveform](images/gpio_waveform.png)
+```
+
+---
+
+## Tools Used
+
+- Verilog HDL
+- VS Code
+- WSL Ubuntu
+- Icarus Verilog
+- GTKWave
+- Yosys
+- TerosHDL
+- RISC-V GNU Toolchain
+
+---
+
 ## Learning Outcomes
 
-- Computer Architecture Fundamentals
-- RISC-V ISA Basics
-- Verilog HDL Design
-- Processor Datapath Development
-- Hardware Simulation
-- Software-to-Hardware Execution Flow
-- Linux-Based FPGA/VLSI Development Environment
+- RISC-V ISA Fundamentals
+- Processor Datapath Design
+- Verilog HDL Development
+- Register File Design
+- ALU Design
+- Peripheral Integration (GPIO)
+- Hardware Simulation and Debugging
+- GTKWave Analysis
+- Software-to-Hardware Workflow
+- Git and GitHub Project Management
+
+---
 
 ## Future Improvements
 
-- Support for Load/Store Instructions (LW/SW)
+- Load (LW) Instruction Support
+- Store (SW) Instruction Support
 - Branch Instructions (BEQ/BNE)
 - Jump Instructions (JAL/JALR)
-- Full RV32I Support
+- Memory-Mapped GPIO
+- UART Peripheral
 - 5-Stage Pipelined Processor
 - FPGA Implementation
-- System-on-Chip (SoC) Integration
+- RISC-V SoC Development
+
+---
 
 ## Author
 
 **Nithya Shapthan**
 
-ECE Student | Digital Design | RISC-V | VLSI | Embedded Systems
+Electronics and Communication Engineering (ECE)  
+VIT Chennai
+
+GitHub: https://github.com/shapthan-simcode
