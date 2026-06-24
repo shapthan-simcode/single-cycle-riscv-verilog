@@ -1,0 +1,6 @@
+a.out
+cpu.out
+*.vcd
+*.elf
+*.bin
+*.o
