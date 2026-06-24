@@ -1,6 +1,7 @@
 module cpu_top(
     input clk,
-    input reset_n
+    input reset_n,
+    output [7:0] gpio_out
   );
 
   wire [31:0] pc;
@@ -21,17 +22,20 @@ module cpu_top(
   wire [31:0] alu_b;
   wire [31:0] result;
 
+  // Program Counter
   pc PC(
        .clk(clk),
        .reset_n(reset_n),
        .pc(pc)
      );
 
+  // Instruction Memory
   instruction_memory IMEM(
                        .addr(pc),
                        .instr(instr)
                      );
 
+  // Decoder
   decoder DEC(
             .instr(instr),
             .opcode(opcode),
@@ -40,17 +44,20 @@ module cpu_top(
             .rs2(rs2)
           );
 
+  // Immediate Generator
   imm_gen IMM(
             .instr(instr),
             .imm(imm)
           );
 
+  // Control Unit
   control CTRL(
             .opcode(opcode),
             .reg_write(reg_write),
             .alu_src(alu_src)
           );
 
+  // Register File
   regfile RF(
             .clk(clk),
             .we(reg_write),
@@ -62,13 +69,23 @@ module cpu_top(
             .rd2(data2)
           );
 
+  // ALU Input MUX
   assign alu_b = alu_src ? imm : data2;
 
+  // ALU
   alu ALU(
         .a(data1),
         .b(alu_b),
         .alu_ctrl(2'b00),
         .y(result)
       );
+
+  // GPIO Peripheral
+  gpio GPIO(
+         .clk(clk),
+         .we(reg_write),
+         .wdata(result),
+         .gpio_out(gpio_out)
+       );
 
 endmodule

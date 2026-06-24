@@ -3,10 +3,19 @@ module tb_cpu;
   reg clk;
   reg reset_n;
 
+  wire [7:0] gpio_out;
+
   cpu_top uut (
             .clk(clk),
-            .reset_n(reset_n)
+            .reset_n(reset_n),
+            .gpio_out(gpio_out)
           );
+
+  initial
+  begin
+    $dumpfile("processor.vcd");
+    $dumpvars(0, tb_cpu);
+  end
 
   initial
   begin
@@ -17,13 +26,11 @@ module tb_cpu;
 
   initial
   begin
-    $monitor("Time=%0t", $time);
-
     reset_n = 0;
     #10;
     reset_n = 1;
 
-    #100;
+    #200;
     $finish;
   end
 
